@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+
+# Build artifacts
+dist/
+build/
+*.spec
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Internal tooling
+.reasonix/
+
+# Archives
+*.zip
+*.7z
+*.rar
+
+# Virtual environment
+venv/
+.venv/
+env/
