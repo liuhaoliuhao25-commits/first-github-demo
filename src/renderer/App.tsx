@@ -16,7 +16,6 @@ interface ChatMessage {
 
 export const App: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
 
   // 监听全屏状态
@@ -72,9 +71,6 @@ export const App: React.FC = () => {
       {/* VRM 渲染画布 */}
       <PetCanvas
         vrmUrl="/models/default.vrm"
-        onExpressionChange={(expression) => {
-          console.log('Expression changed:', expression)
-        }}
       />
 
       {/* 设置面板 */}
@@ -92,8 +88,7 @@ export const App: React.FC = () => {
       <ToastContainer position="top-right" />
 
       {/* 主窗口控制提示 */}
-      {!isSettingsOpen && (
-        <div
+      <div
           style={{
             position: 'fixed',
             bottom: '20px',
@@ -142,7 +137,6 @@ export const App: React.FC = () => {
             ✕
           </button>
         </div>
-      )}
     </div>
   )
 }

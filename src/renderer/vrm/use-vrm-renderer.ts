@@ -2,13 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { VRMRenderer } from './vrm-renderer'
 import type { VRM } from '@pixiv/three-vrm'
 
-interface UseVRMRendererOptions {
+export interface UseVRMRendererOptions {
   width?: number
   height?: number
   vrmUrl?: string
 }
 
-interface UseVRMRendererReturn {
+export interface UseVRMRendererReturn {
   canvasRef: React.RefObject<HTMLCanvasElement>
   vrm: VRM | null
   renderer: VRMRenderer | null

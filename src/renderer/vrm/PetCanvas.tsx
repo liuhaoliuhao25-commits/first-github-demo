@@ -1,26 +1,21 @@
 import React, { useEffect } from 'react'
 import { useVRMRenderer } from './use-vrm-renderer'
 
-interface PetCanvasProps {
+export interface PetCanvasProps {
   vrmUrl?: string
   width?: number
   height?: number
-  onExpressionChange?: (expression: string) => void
 }
 
 export const PetCanvas: React.FC<PetCanvasProps> = ({
   vrmUrl = '/models/default.vrm',
   width = 400,
   height = 600,
-  onExpressionChange,
 }) => {
   const {
     canvasRef,
-    vrm,
     isLoading,
     error,
-    setExpression,
-    playAnimation,
     resize,
   } = useVRMRenderer({
     vrmUrl,
@@ -42,19 +37,6 @@ export const PetCanvas: React.FC<PetCanvasProps> = ({
 
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-
-  // 测试表情控制（后续会替换为实际交互逻辑）
-  useEffect(() => {
-    if (!vrm || !onExpressionChange) return
-
-    // 示例：定期切换表情
-    const interval = setInterval(() => {
-      setExpression('happy', 0.8)
-      setTimeout(() => setExpression('happy', 0), 2000)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [vrm, setExpression, onExpressionChange])
 
   if (error) {
     return (

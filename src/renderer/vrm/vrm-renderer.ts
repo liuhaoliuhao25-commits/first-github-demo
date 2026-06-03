@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { VRM, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 export interface VRMRendererConfig {
   canvas?: HTMLCanvasElement
@@ -84,9 +84,9 @@ export class VRMRenderer {
     loader.crossOrigin = 'anonymous'
 
     // 注册 VRM 插件
-    loader.register((parser) => {
+    loader.register((parser: any) => {
       return new VRMLoaderPlugin(parser, {
-        autoUpdateHumanBounds: true,
+        autoUpdateHumanBones: true,
       })
     })
 
@@ -119,14 +119,8 @@ export class VRMRenderer {
   private setupLookAt(): void {
     if (!this.vrm?.lookAt) return
 
-    this.vrm.lookAt.autoUpdate = true
-    
-    // 配置视线类型
-    this.vrm.lookAt.type = 'boneRotation'
-    
-    // 设置视线范围限制
-    this.vrm.lookAt.horizontalOuterAngleLimit = 60 * Math.PI / 180
-    this.vrm.lookAt.verticalAngleLimit = 10 * Math.PI / 180
+    // VRM 3.x: lookAt 已经自动配置
+    console.log('LookAt initialized')
   }
 
   private loadAnimations(gltf: any): void {
@@ -140,9 +134,9 @@ export class VRMRenderer {
   }
 
   private setupSpringBone(): void {
-    if (!this.vrm?.springBone) return
+    if (!this.vrm?.springBoneManager) return
 
-    this.vrm.springBone.setGravity({ x: 0, y: -1, z: 0 })
+    // VRM 3.x: springBone 自动更新
     console.log('Spring bone initialized')
   }
 
@@ -175,12 +169,10 @@ export class VRMRenderer {
 
   // 更新视线（鼠标跟随）
   updateLookAt(targetX: number, targetY: number): void {
-    if (!this.vrm?.head) return
+    if (!this.vrm?.lookAt) return
 
-    // 将鼠标位置转换为世界坐标
-    const quaternion = this.vrm.head.getWorldQuaternion(new THREE.Quaternion())
-    
-    this.vrm.lookAt?.applyRotation(quaternion, targetX, targetY, 1.0)
+    // VRM 3.x: 使用 target 属性
+    this.vrm.lookAt.target?.position.set(targetX, targetY, 0)
   }
 
   // 鼠标追踪
@@ -206,8 +198,8 @@ export class VRMRenderer {
     this.mixer.update(delta)
 
     // 更新物理骨骼
-    if (this.vrm?.springBone) {
-      this.vrm.springBone.update(delta)
+    if (this.vrm?.springBoneManager) {
+      this.vrm.springBoneManager.update(delta)
     }
 
     // 渲染场景
