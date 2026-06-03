@@ -51,8 +51,8 @@ export const petWindowAPI = {
   },
 
   // AI 对话
-  async sendMessage(message: string): Promise<string> {
-    return ipcRenderer.invoke('ai:sendMessage', message)
+  async sendMessage(message: string): Promise<void> {
+    ipcRenderer.invoke('ai:sendMessage', message)
   },
 
   onAIResponse(callback: (response: string) => void): () => void {
@@ -61,5 +61,25 @@ export const petWindowAPI = {
     }
     ipcRenderer.on('ai:response', handler)
     return () => ipcRenderer.removeListener('ai:response', handler)
+  },
+
+  onAIStream(callback: (chunk: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, chunk: string) => {
+      callback(chunk)
+    }
+    ipcRenderer.on('ai:stream', handler)
+    return () => ipcRenderer.removeListener('ai:stream', handler)
+  },
+
+  onAIError(callback: (error: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, error: string) => {
+      callback(error)
+    }
+    ipcRenderer.on('ai:error', handler)
+    return () => ipcRenderer.removeListener('ai:error', handler)
+  },
+
+  clearAIContext(): void {
+    ipcRenderer.send('ai:clearContext')
   },
 }
