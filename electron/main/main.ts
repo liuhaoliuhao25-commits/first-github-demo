@@ -4,11 +4,13 @@ import { PetWindowManager } from './services/pet-window'
 import { ShortcutService } from './services/shortcut'
 import { FullScreenDetector } from './services/fullscreen-detector'
 import { IpcHandler } from './services/ipc-handler'
+import { AIHandler } from './handlers/ai-handler'
 import { logger } from './services/logger'
 
 let tray: Tray | null = null
 let windowManager: PetWindowManager | null = null
 let fullscreenDetector: FullScreenDetector | null = null
+let aiHandler: AIHandler | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -107,6 +109,12 @@ function setupServices() {
   const ipcHandler = new IpcHandler(windowManager)
   ipcHandler.registerHandlers()
 
+  // 初始化 AI 服务
+  aiHandler = new AIHandler(windowManager.getWindow())
+  aiHandler.initialize().catch((err) => {
+    logger.error('Failed to initialize AI handler', err)
+  })
+
   // 注册快捷键
   const shortcutService = new ShortcutService(windowManager)
   shortcutService.registerAll()
@@ -129,6 +137,7 @@ app.whenReady().then(() => {
 // 清理服务
 app.on('will-quit', () => {
   logger.info('Application quitting')
+  aiHandler?.dispose()
   fullscreenDetector?.stopMonitoring()
   tray?.destroy()
   windowManager?.destroy()
