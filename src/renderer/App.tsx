@@ -5,8 +5,23 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // TODO: 初始化 Three.js VRM 渲染
-    console.log('App mounted, initializing VRM renderer...')
+    console.log('App mounted, initializing...')
+
+    // 监听打开设置事件
+    window.electronAPI?.onOpenSettings(() => {
+      console.log('Open settings requested')
+      // TODO: 打开设置面板
+    })
+
+    // 监听检查更新事件
+    window.electronAPI?.onCheckUpdate(() => {
+      console.log('Check update requested')
+      // TODO: 检查更新
+    })
+
+    return () => {
+      console.log('App unmounting...')
+    }
   }, [])
 
   return (

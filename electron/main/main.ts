@@ -1,134 +1,159 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
+import { app, Tray, Menu, BrowserWindow } from 'electron'
 import path from 'path'
+import { PetWindowManager } from './services/pet-window'
+import { ShortcutService } from './services/shortcut'
+import { FullScreenDetector } from './services/fullscreen-detector'
+import { IpcHandler } from './services/ipc-handler'
+import { logger } from './services/logger'
 
-let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let windowManager: PetWindowManager | null = null
+let fullscreenDetector: FullScreenDetector | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
 function createPetWindow() {
-  mainWindow = new BrowserWindow({
+  logger.info('Creating pet window')
+  
+  windowManager = new PetWindowManager()
+  const win = windowManager.createWindow({
     width: 400,
     height: 600,
-    frame: false,
-    transparent: true,
     alwaysOnTop: true,
-    skipTaskbar: true,
-    hasShadow: false,
-    focusable: false,
-    backgroundColor: '#00000000',
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      webgl: true,
-      webgl2: true,
-      backgroundThrottling: false,
-      powerSaveBlocker: false,
-      preload: path.join(__dirname, '../preload.js'),
-    },
   })
-
-  // Windows 特定优化
-  if (process.platform === 'win32') {
-    mainWindow.setWindowButtonVisibility(false)
-    mainWindow.setBackgroundColor('#00000000')
-  }
-
-  // macOS 特定优化
-  if (process.platform === 'darwin') {
-    mainWindow.setVibrancy('fullscreen-ui')
-  }
 
   // 加载页面
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173')
-    mainWindow.webContents.openDevTools()
+    win.loadURL('http://localhost:5173')
+    win.webContents.openDevTools()
+    logger.info('Loaded in development mode')
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+    win.loadFile(path.join(__dirname, '../dist/index.html'))
+    logger.info('Loaded in production mode')
   }
 
-  // 鼠标穿透逻辑
-  let isMouseOver = false
-  mainWindow.on('leave-html-full-screen', () => {
-    mainWindow?.setIgnoreMouseEvents(true, { forward: true })
+  // 窗口事件
+  win.on('ready-to-show', () => {
+    logger.info('Window ready to show')
   })
 
-  return mainWindow
+  win.on('closed', () => {
+    logger.info('Window closed')
+    windowManager = null
+  })
+
+  return win
 }
 
 function createTray() {
-  tray = new Tray(path.join(__dirname, '../resources/icon.png'))
-  
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: '显示/隐藏',
-      click: () => {
-        if (mainWindow?.isVisible()) {
-          mainWindow.hide()
-        } else {
-          mainWindow?.show()
-        }
-      },
-    },
-    {
-      label: '设置',
-      click: () => {
-        mainWindow?.webContents.send('open-settings')
-      },
-    },
-    { type: 'separator' },
-    {
-      label: '检查更新',
-      click: () => {
-        mainWindow?.webContents.send('check-update')
-      },
-    },
-    { type: 'separator' },
-    {
-      label: '退出',
-      click: () => {
-        app.quit()
-      },
-    },
-  ])
+  try {
+    const trayPath = path.join(__dirname, '../resources/icon.png')
+    tray = new Tray(trayPath)
 
-  tray.setToolTip('独有桌宠')
-  tray.setContextMenu(contextMenu)
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: '显示/隐藏',
+        click: () => {
+          const win = windowManager?.getWindow()
+          if (win?.isVisible()) {
+            windowManager?.hide()
+            logger.info('Hide pet window')
+          } else {
+            windowManager?.show()
+            logger.info('Show pet window')
+          }
+        },
+      },
+      {
+        label: '设置',
+        click: () => {
+          logger.info('Open settings')
+          windowManager?.getWindow()?.webContents.send('open-settings')
+        },
+      },
+      { type: 'separator' },
+      {
+        label: '检查更新',
+        click: () => {
+          logger.info('Check update')
+          windowManager?.getWindow()?.webContents.send('check-update')
+        },
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          logger.info('Application quit')
+          app.quit()
+        },
+      },
+    ])
+
+    tray.setToolTip('独有桌宠')
+    tray.setContextMenu(contextMenu)
+
+    logger.info('Tray created successfully')
+  } catch (error) {
+    logger.error('Failed to create tray', error)
+  }
 }
 
-// IPC 处理
-ipcMain.on('window-control', (event, action: string) => {
-  if (!mainWindow) return
+function setupServices() {
+  if (!windowManager) return
 
-  switch (action) {
-    case 'toggle-transparent':
-      // TODO: 实现透明切换
-      break
-    case 'toggle-ontop':
-      // TODO: 实现置顶切换
-      break
-    case 'toggle-mouse-through':
-      // TODO: 实现鼠标穿透切换
-      break
-  }
-})
+  logger.info('Setting up services')
+
+  // 注册 IPC 处理器
+  const ipcHandler = new IpcHandler(windowManager)
+  ipcHandler.registerHandlers()
+
+  // 注册快捷键
+  const shortcutService = new ShortcutService(windowManager)
+  shortcutService.registerAll()
+  logger.info('Shortcuts registered')
+
+  // 启动全屏检测
+  fullscreenDetector = new FullScreenDetector(windowManager)
+  fullscreenDetector.startMonitoring((isFullScreen) => {
+    logger.debug('Full screen state changed', { isFullScreen })
+  })
+}
 
 app.whenReady().then(() => {
+  logger.info('Application ready')
   createPetWindow()
   createTray()
+  setupServices()
+})
 
-  // 注册全局快捷键
-  // TODO: 实现快捷键注册
+// 清理服务
+app.on('will-quit', () => {
+  logger.info('Application quitting')
+  fullscreenDetector?.stopMonitoring()
+  tray?.destroy()
+  windowManager?.destroy()
 })
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    logger.info('All windows closed, quitting')
     app.quit()
   }
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  logger.info('Activate')
+  if (windowManager?.getWindow() === null) {
     createPetWindow()
+    setupServices()
   }
+})
+
+// 全局错误处理
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', error)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled rejection', { reason, promise })
 })
