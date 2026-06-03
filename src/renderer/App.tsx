@@ -3,6 +3,7 @@ import { PetCanvas } from './vrm'
 import { SettingsPanel } from './components/SettingsPanel'
 import { ChatBubble } from './components/ChatBubble'
 import { ToastContainer, showToast } from './components/ToastNotification'
+import { VoiceInput } from './components/VoiceInput'
 import { petWindowAPI } from './api/pet-window'
 import { systemTrayAPI } from './api/system-tray'
 
@@ -86,6 +87,9 @@ export const App: React.FC = () => {
 
       {/* 通知 Toast */}
       <ToastContainer position="top-right" />
+
+      {/* 语音输入 */}
+      <VoiceInput />
 
       {/* 主窗口控制提示 */}
       <div

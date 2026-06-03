@@ -5,12 +5,14 @@ import { ShortcutService } from './services/shortcut'
 import { FullScreenDetector } from './services/fullscreen-detector'
 import { IpcHandler } from './services/ipc-handler'
 import { AIHandler } from './handlers/ai-handler'
+import { VoiceHandler } from './handlers/voice-handler'
 import { logger } from './services/logger'
 
 let tray: Tray | null = null
 let windowManager: PetWindowManager | null = null
 let fullscreenDetector: FullScreenDetector | null = null
 let aiHandler: AIHandler | null = null
+let voiceHandler: VoiceHandler | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -115,6 +117,12 @@ function setupServices() {
     logger.error('Failed to initialize AI handler', err)
   })
 
+  // 初始化语音服务
+  voiceHandler = new VoiceHandler(windowManager.getWindow())
+  voiceHandler.initialize().catch((err) => {
+    logger.error('Failed to initialize voice handler', err)
+  })
+
   // 注册快捷键
   const shortcutService = new ShortcutService(windowManager)
   shortcutService.registerAll()
@@ -138,6 +146,7 @@ app.whenReady().then(() => {
 app.on('will-quit', () => {
   logger.info('Application quitting')
   aiHandler?.dispose()
+  voiceHandler?.dispose()
   fullscreenDetector?.stopMonitoring()
   tray?.destroy()
   windowManager?.destroy()
