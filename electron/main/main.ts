@@ -6,6 +6,9 @@ import { FullScreenDetector } from './services/fullscreen-detector'
 import { IpcHandler } from './services/ipc-handler'
 import { AIHandler } from './handlers/ai-handler'
 import { VoiceHandler } from './handlers/voice-handler'
+import { LogHandler } from './handlers/log-handler'
+import { ErrorHandler } from './handlers/error-handler'
+import { StorageService } from './services/storage-service'
 import { logger } from './services/logger'
 
 let tray: Tray | null = null
@@ -13,6 +16,9 @@ let windowManager: PetWindowManager | null = null
 let fullscreenDetector: FullScreenDetector | null = null
 let aiHandler: AIHandler | null = null
 let voiceHandler: VoiceHandler | null = null
+let logHandler: LogHandler | null = null
+let errorHandler: ErrorHandler | null = null
+let storageService: StorageService | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -107,6 +113,10 @@ function setupServices() {
 
   logger.info('Setting up services')
 
+  // 初始化加密存储
+  const defaultEncryptionKey = 'pet-default-key-change-in-production'
+  storageService = new StorageService(defaultEncryptionKey)
+
   // 注册 IPC 处理器
   const ipcHandler = new IpcHandler(windowManager)
   ipcHandler.registerHandlers()
@@ -123,6 +133,12 @@ function setupServices() {
     logger.error('Failed to initialize voice handler', err)
   })
 
+  // 初始化日志处理器
+  logHandler = new LogHandler(windowManager.getWindow())
+
+  // 初始化错误处理器
+  errorHandler = new ErrorHandler(windowManager.getWindow())
+
   // 注册快捷键
   const shortcutService = new ShortcutService(windowManager)
   shortcutService.registerAll()
@@ -133,6 +149,8 @@ function setupServices() {
   fullscreenDetector.startMonitoring((isFullScreen) => {
     logger.debug('Full screen state changed', { isFullScreen })
   })
+
+  logger.info('All services initialized')
 }
 
 app.whenReady().then(() => {
@@ -147,9 +165,12 @@ app.on('will-quit', () => {
   logger.info('Application quitting')
   aiHandler?.dispose()
   voiceHandler?.dispose()
+  logHandler?.dispose()
+  errorHandler?.dispose()
   fullscreenDetector?.stopMonitoring()
   tray?.destroy()
   windowManager?.destroy()
+  logger.info('All services disposed')
 })
 
 app.on('window-all-closed', () => {
