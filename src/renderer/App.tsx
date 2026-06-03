@@ -4,6 +4,7 @@ import { SettingsPanel } from './components/SettingsPanel'
 import { ChatBubble } from './components/ChatBubble'
 import { ToastContainer, showToast } from './components/ToastNotification'
 import { VoiceInput } from './components/VoiceInput'
+import { useInteractionEngine } from './hooks/use-interaction'
 import { petWindowAPI } from './api/pet-window'
 import { systemTrayAPI } from './api/system-tray'
 
@@ -18,6 +19,9 @@ interface ChatMessage {
 export const App: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isFullScreen, setIsFullScreen] = useState(false)
+  
+  // 交互引擎
+  const { status, recordInteraction } = useInteractionEngine()
 
   // 监听全屏状态
   useEffect(() => {
@@ -59,6 +63,26 @@ export const App: React.FC = () => {
 
     return unsubscribe
   }, [])
+
+  // 监听用户操作，记录交互
+  useEffect(() => {
+    const handleUserActivity = () => {
+      recordInteraction('user-active', {
+        isIdle: status.isIdle,
+        idleDuration: status.idleDuration,
+      })
+    }
+
+    window.addEventListener('mousemove', handleUserActivity)
+    window.addEventListener('click', handleUserActivity)
+    window.addEventListener('keydown', handleUserActivity)
+
+    return () => {
+      window.removeEventListener('mousemove', handleUserActivity)
+      window.removeEventListener('click', handleUserActivity)
+      window.removeEventListener('keydown', handleUserActivity)
+    }
+  }, [status.isIdle, status.idleDuration, recordInteraction])
 
   return (
     <div

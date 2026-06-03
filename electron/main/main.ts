@@ -8,6 +8,7 @@ import { AIHandler } from './handlers/ai-handler'
 import { VoiceHandler } from './handlers/voice-handler'
 import { LogHandler } from './handlers/log-handler'
 import { ErrorHandler } from './handlers/error-handler'
+import { InteractionHandler } from './handlers/interaction-handler'
 import { StorageService } from './services/storage-service'
 import { logger } from './services/logger'
 
@@ -19,6 +20,7 @@ let voiceHandler: VoiceHandler | null = null
 let logHandler: LogHandler | null = null
 let errorHandler: ErrorHandler | null = null
 let storageService: StorageService | null = null
+let interactionHandler: InteractionHandler | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -139,6 +141,12 @@ function setupServices() {
   // 初始化错误处理器
   errorHandler = new ErrorHandler(windowManager.getWindow())
 
+  // 初始化交互引擎
+  interactionHandler = new InteractionHandler(windowManager.getWindow())
+  interactionHandler.initialize().catch((err) => {
+    logger.error('Failed to initialize interaction handler', err)
+  })
+
   // 注册快捷键
   const shortcutService = new ShortcutService(windowManager)
   shortcutService.registerAll()
@@ -167,6 +175,7 @@ app.on('will-quit', () => {
   voiceHandler?.dispose()
   logHandler?.dispose()
   errorHandler?.dispose()
+  interactionHandler?.dispose()
   fullscreenDetector?.stopMonitoring()
   tray?.destroy()
   windowManager?.destroy()
