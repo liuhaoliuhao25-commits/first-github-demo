@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { petWindowAPI } from '../api/pet-window'
+import { UpdateChecker } from './UpdateChecker'
 
 interface SettingsState {
   alwaysOnTop: boolean
@@ -166,6 +167,21 @@ export const SettingsPanel: React.FC = () => {
       <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {activeTab === 'general' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ 
+              padding: '12px', 
+              backgroundColor: '#f9f9f9', 
+              borderRadius: '8px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <div style={{ fontWeight: 500, fontSize: '14px' }}>检查更新</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>当前版本：1.0.0</div>
+              </div>
+              <UpdateChecker />
+            </div>
+
             <SettingToggle
               label="总是置顶"
               description="窗口始终显示在其他窗口上方"
