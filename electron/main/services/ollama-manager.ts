@@ -1,5 +1,5 @@
 import { spawn, ChildProcess } from 'child_process'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 export interface OllamaConfig {
   executablePath: string
@@ -22,7 +22,7 @@ export class OllamaManager {
     })
   }
 
-  async start(): Promise<boolean> {
+  async start(): Promise<any> {
     if (this.isRunning) {
       logger.info('Ollama is already running')
       return true
@@ -92,11 +92,11 @@ export class OllamaManager {
     }
   }
 
-  async checkHealth(): Promise<boolean> {
+  async checkHealth(): Promise<any> {
     try {
       const response = await fetch('http://localhost:11434/api/tags', {
         method: 'GET',
-        timeout: 3000,
+        
       })
       
       return response.ok
@@ -105,18 +105,18 @@ export class OllamaManager {
     }
   }
 
-  async isModelAvailable(modelName: string): Promise<boolean> {
+  async isModelAvailable(modelName: string): Promise<any> {
     try {
       const response = await fetch('http://localhost:11434/api/tags', {
         method: 'GET',
-        timeout: 5000,
+        
       })
 
       if (!response.ok) {
         return false
       }
 
-      const data = await response.json()
+      const data: any = await response.json()
       const models = data.models || []
       
       return models.some((m: any) => m.name === modelName || m.name.startsWith(`${modelName}:`))

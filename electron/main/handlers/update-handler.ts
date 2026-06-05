@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
-import { AutoUpdaterService } from './auto-updater'
-import { logger } from '../logger'
+import { AutoUpdaterService } from '../services/auto-updater'
+import { logger } from '../services/logger'
 
 export class UpdateHandler {
   private mainWindow: BrowserWindow

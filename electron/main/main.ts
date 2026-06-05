@@ -1,4 +1,4 @@
-import { app, Tray, Menu, BrowserWindow } from 'electron'
+import { app, Tray, Menu } from 'electron'
 import path from 'path'
 import { PetWindowManager } from './services/pet-window'
 import { ShortcutService } from './services/shortcut'
@@ -20,9 +20,9 @@ let aiHandler: AIHandler | null = null
 let voiceHandler: VoiceHandler | null = null
 let logHandler: LogHandler | null = null
 let errorHandler: ErrorHandler | null = null
-let storageService: StorageService | null = null
 let interactionHandler: InteractionHandler | null = null
 let updateHandler: UpdateHandler | null = null
+let storageService: StorageService | null = null
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -126,31 +126,31 @@ function setupServices() {
   ipcHandler.registerHandlers()
 
   // 初始化 AI 服务
-  aiHandler = new AIHandler(windowManager.getWindow())
+  aiHandler = new AIHandler(windowManager.getWindow()!)
   aiHandler.initialize().catch((err) => {
     logger.error('Failed to initialize AI handler', err)
   })
 
   // 初始化语音服务
-  voiceHandler = new VoiceHandler(windowManager.getWindow())
+  voiceHandler = new VoiceHandler(windowManager.getWindow()!)
   voiceHandler.initialize().catch((err) => {
     logger.error('Failed to initialize voice handler', err)
   })
 
   // 初始化日志处理器
-  logHandler = new LogHandler(windowManager.getWindow())
+  logHandler = new LogHandler(windowManager.getWindow()!)
 
   // 初始化错误处理器
-  errorHandler = new ErrorHandler(windowManager.getWindow())
+  errorHandler = new ErrorHandler(windowManager.getWindow()!)
 
   // 初始化交互引擎
-  interactionHandler = new InteractionHandler(windowManager.getWindow())
+  interactionHandler = new InteractionHandler(windowManager.getWindow()!)
   interactionHandler.initialize().catch((err) => {
     logger.error('Failed to initialize interaction handler', err)
   })
 
   // 初始化自动更新
-  updateHandler = new UpdateHandler(windowManager.getWindow())
+  updateHandler = new UpdateHandler(windowManager.getWindow()!)
 
   // 注册快捷键
   const shortcutService = new ShortcutService(windowManager)

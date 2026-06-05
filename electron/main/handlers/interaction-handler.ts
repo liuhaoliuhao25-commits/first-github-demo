@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
-import { InteractionEngine } from './interaction-engine'
-import { logger } from '../logger'
+import { InteractionEngine } from '../services/interaction-engine'
+import { logger } from '../services/logger'
 
 interface InteractionSettings {
   idleThresholdMinutes: number

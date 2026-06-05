@@ -1,6 +1,6 @@
 import { spawn, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 export interface PiperConfig {
   executablePath: string

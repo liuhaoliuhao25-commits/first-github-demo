@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 export interface InteractionEvent {
   type: string

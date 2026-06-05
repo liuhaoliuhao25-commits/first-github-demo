@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 export interface AIConfig {
   provider: 'ollama' | 'cloud'
@@ -193,7 +193,7 @@ export class AIService extends EventEmitter {
       throw new Error(`Cloud API error: ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const data: any = await response.json()
     const text = data.choices?.[0]?.message?.content || ''
 
     return {

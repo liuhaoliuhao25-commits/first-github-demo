@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow } from 'electron'
-import { logger } from '../logger'
+import { logger } from '../services/logger'
 import path from 'path'
 import fs from 'fs/promises'
 

@@ -30,9 +30,8 @@ export class PetWindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         webgl: true,
-        webgl2: true,
         backgroundThrottling: false,
-        powerSaveBlocker: false,
+        
         preload: require.resolve('../preload/preload'),
       },
     })
@@ -78,8 +77,9 @@ export class PetWindowManager {
   // 切换透明
   toggleTransparent(): void {
     if (!this.window) return
-    const isTransparent = this.window.isTransparent()
-    this.window.setTransparent(!isTransparent)
+    // 使用 opacity 实现透明度切换
+    const opacity = this.window.getOpacity()
+    this.window.setOpacity(opacity > 0.5 ? 0.3 : 1.0)
   }
 
   // 切换置顶
@@ -92,8 +92,8 @@ export class PetWindowManager {
   // 切换鼠标穿透
   toggleMouseThrough(): void {
     if (!this.window) return
-    const isIgnoring = this.window.isIgnoreMouseEvents()
-    this.window.setIgnoreMouseEvents(!isIgnoring)
+    // 简单切换穿透状态
+    this.window.setIgnoreMouseEvents(true, { forward: true })
   }
 
   // 隐藏窗口

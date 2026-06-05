@@ -1,4 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
+import { logger } from './logger'
+import { PetWindowManager } from './pet-window'
 
 export class FullScreenDetector {
   private checkInterval: NodeJS.Timeout | null = null

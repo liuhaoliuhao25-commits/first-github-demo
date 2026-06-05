@@ -72,6 +72,14 @@ export class LoggerService {
   error(message: string, context?: any): void {
     this.log(LogLevel.ERROR, message, context)
   }
+
+  getLogFilePath(): string {
+    return path.join(this.logDir, 'debug.log')
+  }
+
+  getLogDir(): string {
+    return this.logDir
+  }
 }
 
 // 导出单例

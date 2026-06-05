@@ -1,5 +1,5 @@
 import { app, ipcMain, BrowserWindow } from 'electron'
-import { logger } from '../logger'
+import { logger } from '../services/logger'
 
 export interface ErrorReport {
   type: string

@@ -1,7 +1,7 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron'
-import { AIService, AIConfig } from './ai-service'
-import { OllamaManager } from './ollama-manager'
-import { logger } from '../logger'
+import { AIService, AIConfig } from '../services/ai-service'
+import { OllamaManager } from '../services/ollama-manager'
+import { logger } from '../services/logger'
 
 interface AISettings {
   provider: 'ollama' | 'cloud'

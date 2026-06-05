@@ -1,7 +1,7 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron'
-import { WhisperService } from './whisper-service'
-import { PiperService } from './piper-service'
-import { logger } from '../logger'
+import { WhisperService } from '../services/whisper-service'
+import { PiperService } from '../services/piper-service'
+import { logger } from '../services/logger'
 
 interface VoiceSettings {
   enableVoiceRecognition: boolean

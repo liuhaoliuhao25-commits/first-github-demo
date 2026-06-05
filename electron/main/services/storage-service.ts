@@ -2,7 +2,7 @@ import { app } from 'electron'
 import fs from 'fs/promises'
 import path from 'path'
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
-import { logger } from '../logger'
+import { logger } from './logger'
 
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 16
