@@ -16,10 +16,11 @@ interface Props {
 
 const { post } = Astro.props;
 const { title, description, pubDate, category, tags } = post.data;
+const slug = post.id.replace(/\.md$/, '');
 ---
 
 <article class="card post-card" data-reveal>
-  <a href={`/blog/${post.id}/`} class="post-card-link" aria-label={title}>
+  <a href={`/blog/${slug}/`} class="post-card-link" aria-label={title}>
     <div class="card-meta">
       <span class="badge">{category}</span>
       <time class="num card-date" datetime={formatISO(pubDate)}>
