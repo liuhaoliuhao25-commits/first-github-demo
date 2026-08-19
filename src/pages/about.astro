@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+import SocialLinks from '../components/SocialLinks.astro';
+---
+
+<Base
+  title={`关于 · ${SITE.title}`}
+  description={`关于 ${SITE.author}：${SITE.tagline}`}
+>
+  <section class="page-head section-sm">
+    <div class="container-narrow">
+      <p class="kicker" data-hero>About</p>
+      <h1 class="page-title" data-hero>关于我</h1>
+    </div>
+  </section>
+
+  <section class="section-sm">
+    <div class="container-narrow">
+      <div class="about-grid" data-reveal>
+        <img
+          class="about-avatar"
+          src="/avatar.svg"
+          alt={`${SITE.author} 头像`}
+          width="112"
+          height="112"
+          decoding="async"
+        />
+        <div class="prose">
+          <p>
+            你好，我是 <strong>{SITE.author}</strong>，一名前端工程师 / 独立开发者。
+          </p>
+          <p>
+            这个博客记录我在前端工程、交互动效与设计上的实践与思考。我信奉克制的精致——留白、排版，以及恰到好处的动效，一切服务于内容本身。
+          </p>
+          <p>
+            如果我的文字对你有帮助，欢迎通过邮件或社交平台联系我，也很高兴收到你的反馈与指正。
+          </p>
+        </div>
+      </div>
+
+      <div class="about-social" data-reveal>
+        <SocialLinks />
+      </div>
+    </div>
+  </section>
+</Base>

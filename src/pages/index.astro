@@ -1,0 +1,170 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../lib/site';
+import SocialLinks from '../components/SocialLinks.astro';
+import PostCard from '../components/PostCard.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const featured = posts.slice(0, 3);
+---
+
+<Base title={`${SITE.title} · ${SITE.tagline}`} description={SITE.description}>
+  <!-- 首页头部：一句话简介 + 头像 + 社交链接（克制简洁） -->
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="hero-glow" aria-hidden="true"></div>
+
+    <div class="container hero-inner">
+      <p class="kicker" data-hero>个人技术博客 · 建站于 2024</p>
+
+      <h1 class="hero-title" data-hero>
+        写代码，<br />也写点别的。
+      </h1>
+
+      <p class="hero-desc" data-hero>
+        {SITE.description}
+      </p>
+
+      <div class="hero-foot" data-hero>
+        <img
+          class="hero-avatar"
+          src="/avatar.svg"
+          alt={`${SITE.author} 头像`}
+          width="64"
+          height="64"
+          decoding="async"
+        />
+        <div class="hero-id">
+          <span class="hero-name">{SITE.author}</span>
+          <span class="hero-role">Frontend Engineer · 独立开发者</span>
+        </div>
+        <SocialLinks />
+      </div>
+    </div>
+
+    <a class="hero-scroll" href="#writing" data-hero aria-label="向下滚动查看更多">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M12 5v14M6 13l6 6 6-6"></path>
+      </svg>
+    </a>
+  </section>
+
+  <!-- 精选文章 -->
+  <section class="section" id="writing">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div>
+          <p class="kicker">Writing</p>
+          <h2 class="section-title">最近的文章</h2>
+        </div>
+        <a class="btn" href="/blog/">全部文章 <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div class="post-grid">
+        {featured.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 沉浸式滚动场景：一句理念，逐行浮现（桌面端 pin + scrub，移动端直接可读） -->
+  <section class="manifesto" data-manifesto>
+    <div class="manifesto-sticky">
+      <p class="manifesto-kicker">Design Principle</p>
+      <p class="manifesto-line" data-line>少即是多。</p>
+      <p class="manifesto-line" data-line>所有设计，都为阅读让路。</p>
+      <p class="manifesto-line" data-line>慢一点，把事情做对。</p>
+    </div>
+  </section>
+
+  <!-- 分类快捷入口 -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="category-row" data-reveal>
+        <p class="kicker">Browse</p>
+        <a class="btn" href="/blog/category/前端/">前端</a>
+        <a class="btn" href="/blog/category/设计/">设计</a>
+        <a class="btn" href="/blog/category/随笔/">随笔</a>
+        <a class="btn" href="/blog/">查看全部</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // 首页专属动效：hero 背景视差（scrub）+ manifesto pin 场景
+  // 移动端关闭重特效，仅依赖全局的 data-hero / data-reveal 轻量淡入
+  (async function () {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    if (!window.matchMedia('(min-width: 721px)').matches) return;
+
+    var mod = await Promise.all([import('gsap'), import('gsap/ScrollTrigger')]);
+    var gsap = mod[0].gsap;
+    var ScrollTrigger = mod[1].ScrollTrigger;
+    gsap.registerPlugin(ScrollTrigger);
+
+    // hero 背景视差（滚动驱动）
+    var hero = document.querySelector('.hero');
+    if (hero) {
+      gsap.to('.hero-grid', {
+        yPercent: 18,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+      gsap.to('.hero-glow', {
+        yPercent: -30,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }
+
+    // manifesto：pin + scrub 沉浸滚动，三行理念依次浮现
+    var section = document.querySelector('[data-manifesto]');
+    if (section) {
+      var sticky = section.querySelector('.manifesto-sticky');
+      var lines = section.querySelectorAll('[data-line]');
+
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: '+=180%',
+          pin: sticky,
+          scrub: 0.6,
+        },
+      });
+
+      lines.forEach(function (line, i) {
+        gsap.fromTo(
+          line,
+          { opacity: 0.14, y: 44 },
+          {
+            opacity: 1,
+            y: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top',
+              end: '+=180%',
+              scrub: 0.6,
+            },
+          },
+        );
+      });
+    }
+  })();
+</script>

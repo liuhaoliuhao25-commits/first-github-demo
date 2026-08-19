@@ -1,0 +1,70 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  headings: Heading[];
+}
+
+const { headings = [] } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <nav class="toc" data-toc aria-label="文章目录">
+      <p class="toc-title">目录</p>
+      <ul class="toc-list">
+        {headings.map((h) => (
+          <li>
+            <a class={`toc-link toc-level-${h.depth}`} href={`#${h.slug}`}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  // 目录锚点高亮（增强；无 JS 时链接仍可点击跳转）
+  // 处理页面上所有 [data-toc] 实例（移动端折叠目录 + 桌面侧边目录）
+  (function () {
+    var tocs = document.querySelectorAll('[data-toc]');
+    if (!tocs.length) return;
+
+    tocs.forEach(function (toc) {
+      var links = toc.querySelectorAll('a[href^="#"]');
+      if (!links.length) return;
+
+      var map = new Map();
+      links.forEach(function (link) {
+        var id = link.getAttribute('href').slice(1);
+        var target = document.getElementById(id);
+        if (target) map.set(target, link);
+      });
+      if (!map.size) return;
+
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              links.forEach(function (l) {
+                l.classList.remove('is-active');
+              });
+              var link = map.get(entry.target);
+              if (link) link.classList.add('is-active');
+            }
+          });
+        },
+        { rootMargin: '-18% 0px -70% 0px', threshold: 0 },
+      );
+
+      map.forEach(function (_link, target) {
+        observer.observe(target);
+      });
+    });
+  })();
+</script>

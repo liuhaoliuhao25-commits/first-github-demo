@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../../lib/site';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const categories = [...new Set(posts.map((p) => p.data.category))];
+const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort((a, b) =>
+  a.localeCompare(b, 'zh-CN'),
+);
+---
+
+<Base title="文章" description={`${SITE.title} 的博客文章列表，共 ${posts.length} 篇。`}>
+  <section class="page-head section-sm">
+    <div class="container">
+      <p class="kicker" data-hero>Writing</p>
+      <h1 class="page-title" data-hero>文章</h1>
+      <p class="page-sub num" data-hero>共 {posts.length} 篇 · 按时间倒序</p>
+    </div>
+  </section>
+
+  <section class="section-sm">
+    <div class="container">
+      <!-- 分类 / 标签导航（跳转到静态生成的筛选页） -->
+      <div class="filter-bar" data-reveal>
+        <div class="filter-group">
+          <span class="filter-label">分类</span>
+          {categories.map((c) => (
+            <a class="badge" href={`/blog/category/${encodeURIComponent(c)}/`}>
+              {c}
+            </a>
+          ))}
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">标签</span>
+          {tags.map((t) => (
+            <a class="badge" href={`/blog/tag/${encodeURIComponent(t)}/`}>
+              #{t}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="post-grid post-list">
+        {posts.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+  </section>
+</Base>

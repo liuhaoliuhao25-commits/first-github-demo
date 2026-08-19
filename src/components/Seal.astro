@@ -1,0 +1,19 @@
+---
+interface Props {
+  /** 印章主字（一个字最像传统印章，如姓名 / 雅号首字） */
+  text?: string;
+  /** 印章小字（竖排第二行，如全称或拼音） */
+  sub?: string;
+  /** 印泥颜色，默认朱砂红 */
+  color?: string;
+}
+
+const { text = '言', sub = 'LHXXY', color } = Astro.props;
+const style = color ? `--seal-color: ${color}` : undefined;
+---
+
+<!-- 中式印章：网站签名级彩蛋，hover 有轻微盖印动画（纯 CSS） -->
+<span class="seal" style={style} aria-hidden="true" title="LHXXY 之印">
+  <span class="seal-main">{text}</span>
+  <span class="seal-sub">{sub}</span>
+</span>

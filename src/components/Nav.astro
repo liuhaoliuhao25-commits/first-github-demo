@@ -1,0 +1,43 @@
+---
+import { SITE } from '../lib/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+const links = [
+  { href: '/', label: '首页' },
+  { href: '/blog/', label: '文章' },
+  { href: '/about/', label: '关于' },
+  { href: '/links/', label: '友链' },
+];
+---
+
+<header class="site-nav" data-nav>
+  <div class="container site-nav-inner">
+    <a href="/" class="nav-brand">{SITE.title}</a>
+    <nav class="nav-links" aria-label="主导航">
+      {
+        links.map((link) => (
+          <a
+            class="nav-link"
+            href={link.href}
+            aria-current={Astro.url.pathname === link.href ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="nav-right">
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<script>
+  // 玻璃拟态导航：滚动后加深背景 + 细边框（纯轻量，无依赖）
+  const nav = document.querySelector('[data-nav]');
+  const onScroll = () => {
+    nav.classList.toggle('is-scrolled', window.scrollY > 12);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>

@@ -1,0 +1,245 @@
+---
+import '../styles/global.css';
+import { SITE } from '../lib/site';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** OG / 分享图（建议替换为 1200×630 的 PNG） */
+  image?: string;
+  /** 文章 / 页面专属（覆盖默认 website 类型） */
+  type?: 'website' | 'article';
+  noIndex?: boolean;
+}
+
+const {
+  title = SITE.title,
+  description = SITE.description,
+  image = '/og.svg',
+  type = 'website',
+  noIndex = false,
+} = Astro.props;
+
+const fullTitle = title === SITE.title ? title : `${title} · ${SITE.title}`;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const ogImage = new URL(image, SITE.url).href;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="zh_CN" />
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {noIndex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href="/rss.xml"
+    />
+
+    <!-- 字体：中衬（Noto Serif SC）+ 西无（Inter），display=swap 不阻塞首屏 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 主题初始化 + JS 标记（必须内联，避免闪色） -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme =
+            stored === 'dark' || stored === 'light'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+        // 标记 JS 可用：无 JS 时 html 没有 .js，所有 [data-hero]/图片渐显保持可见
+        document.documentElement.classList.add('js');
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+
+    <div class="glow-bg" aria-hidden="true"></div>
+    <Nav />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <!-- 噪点纹理 + 鼠标跟随光斑（装饰层，不阻塞渲染） -->
+    <div class="grain" aria-hidden="true"></div>
+    <div class="spotlight" aria-hidden="true"></div>
+
+    <!-- UI 增强：光斑跟随 / 图片渐显（轻量，无第三方依赖） -->
+    <script>
+      (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // 鼠标跟随光斑：仅桌面 + 非减少动效
+        var spotlight = document.querySelector('.spotlight');
+        if (spotlight && window.matchMedia('(min-width: 721px)').matches && !reduced) {
+          var x = window.innerWidth / 2;
+          var y = window.innerHeight / 2;
+          var tx = x;
+          var ty = y;
+          var raf;
+          window.addEventListener(
+            'pointermove',
+            function (e) {
+              tx = e.clientX;
+              ty = e.clientY;
+              spotlight.classList.add('is-active');
+            },
+            { passive: true },
+          );
+          window.addEventListener('pointerleave', function () {
+            spotlight.classList.remove('is-active');
+          });
+          var loop = function () {
+            x += (tx - x) * 0.12;
+            y += (ty - y) * 0.12;
+            spotlight.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+            raf = requestAnimationFrame(loop);
+          };
+          loop();
+        }
+
+        // 图片加载完成后淡入放大（渐变占位由 CSS 提供）
+        var imgs = document.querySelectorAll('img');
+        for (var i = 0; i < imgs.length; i++) {
+          (function (img) {
+            if (img.complete && img.naturalWidth > 0) {
+              img.classList.add('is-loaded');
+            } else {
+              img.addEventListener('load', function () {
+                img.classList.add('is-loaded');
+              }, { once: true });
+            }
+          })(imgs[i]);
+        }
+      })();
+    </script>
+
+    <!-- 动效层：按需加载 GSAP + ScrollTrigger + Lenis -->
+    <script>
+      (async function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // 减少动效偏好：完全不加载 GSAP，内容由 CSS 保持可见
+        if (reduced) return;
+
+        var mod = await Promise.all([
+          import('gsap'),
+          import('gsap/ScrollTrigger'),
+          import('lenis'),
+        ]);
+        var gsap = mod[0].gsap;
+        var ScrollTrigger = mod[1].ScrollTrigger;
+        var Lenis = mod[2].default;
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 响应式：桌面启用 Lenis + 完整动画，移动端仅轻量淡入
+        var mm = gsap.matchMedia();
+        mm.add(
+          {
+            isDesktop: '(min-width: 721px)',
+            isMobile: '(max-width: 720px)',
+          },
+          function (ctx) {
+            var isDesktop = ctx.conditions.isDesktop;
+            var lenis;
+            var rafFn;
+
+            if (isDesktop) {
+              lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+              lenis.on('scroll', ScrollTrigger.update);
+              rafFn = function (t) {
+                lenis.raf(t * 1000);
+              };
+              gsap.ticker.add(rafFn);
+              gsap.ticker.lagSmoothing(0);
+              // 暴露给返回顶部等组件使用
+              window.__lenis = lenis;
+            }
+
+            // 标题区入场（data-hero）：所有页面通用
+            var heroEls = gsap.utils.toArray('[data-hero]');
+            if (heroEls.length) {
+              gsap.fromTo(
+                heroEls,
+                { opacity: 0, y: 26 },
+                {
+                  opacity: 1,
+                  y: 0,
+                  duration: 1,
+                  ease: 'power3.out',
+                  stagger: 0.12,
+                  delay: 0.05,
+                  clearProps: 'transform',
+                },
+              );
+            }
+
+            // 滚动进入视口的淡入 + 轻微上移（data-reveal）
+            var shiftY = isDesktop ? 28 : 16;
+            gsap.utils.toArray('[data-reveal]').forEach(function (el) {
+              gsap.from(el, {
+                opacity: 0,
+                y: shiftY,
+                duration: 0.9,
+                ease: 'power2.out',
+                scrollTrigger: {
+                  trigger: el,
+                  start: 'top 88%',
+                  once: true,
+                },
+              });
+            });
+
+            return function () {
+              if (rafFn) gsap.ticker.remove(rafFn);
+              if (lenis) lenis.destroy();
+            };
+          },
+        );
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+
+// 友链数据：直接在此数组增删即可（后续可迁移为 content collection）
+const friends = [
+  {
+    name: '示例友链 A',
+    url: 'https://example.com',
+    desc: '一位独立开发者的技术笔记。',
+    avatar: '/avatar.svg',
+  },
+  {
+    name: '示例友链 B',
+    url: 'https://example.org',
+    desc: '关于设计与排版的有趣观察。',
+    avatar: '/avatar.svg',
+  },
+];
+---
+
+<Base
+  title={`友链 · ${SITE.title}`}
+  description="朋友们的主页，欢迎交换友链。"
+>
+  <section class="page-head section-sm">
+    <div class="container-narrow">
+      <p class="kicker" data-hero>Friends</p>
+      <h1 class="page-title" data-hero>友链</h1>
+      <p class="page-sub" data-hero>一群认真做东西的人。</p>
+    </div>
+  </section>
+
+  <section class="section-sm">
+    <div class="container-narrow">
+      <div class="friend-grid">
+        {
+          friends.map((f) => (
+            <a class="card friend-card" href={f.url} target="_blank" rel="noopener" data-reveal>
+              <img
+                class="friend-avatar"
+                src={f.avatar}
+                alt={`${f.name} 头像`}
+                width="48"
+                height="48"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="friend-info">
+                <span class="friend-name">{f.name}</span>
+                <span class="friend-desc">{f.desc}</span>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+
+      <div class="friend-note" data-reveal>
+        <p class="masthead-rule">交换友链</p>
+        <p>
+          如果你的站点内容与我相近，欢迎来信
+          <a class="link-underline" href={`mailto:${SITE.social.email}`}>
+            {SITE.social.email}
+          </a>
+          。请附上你的站名、链接与一句话介绍。
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

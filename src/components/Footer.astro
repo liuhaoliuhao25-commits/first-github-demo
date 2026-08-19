@@ -1,0 +1,41 @@
+---
+import { SITE } from '../lib/site';
+import Seal from './Seal.astro';
+
+const year = new Date().getFullYear();
+
+const socials = [
+  { href: SITE.social.github, label: 'GitHub' },
+  { href: SITE.social.twitter, label: 'X / Twitter' },
+  { href: `mailto:${SITE.social.email}`, label: 'Email' },
+  { href: SITE.social.rss, label: 'RSS' },
+].filter((s) => s.href);
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <p class="footer-tagline">{SITE.tagline}</p>
+        <p class="footer-copy">
+          © {year} <span class="num">{SITE.author}</span> ·
+          <a class="link-underline" href={SITE.url}>lhxxy.top</a>
+        </p>
+      </div>
+
+      <div class="footer-seal">
+        <Seal />
+      </div>
+
+      <nav class="footer-links" aria-label="页脚导航">
+        {
+          socials.map((s) => (
+            <a class="link-underline" href={s.href} rel="me" target="_blank">
+              {s.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </div>
+</footer>

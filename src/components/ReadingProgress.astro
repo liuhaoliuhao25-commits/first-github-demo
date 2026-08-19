@@ -1,0 +1,23 @@
+---
+---
+
+<div class="reading-progress" aria-hidden="true">
+  <div class="reading-progress-bar" data-progress-bar></div>
+</div>
+
+<script>
+  // 阅读进度条（增强）
+  (function () {
+    var bar = document.querySelector('[data-progress-bar]');
+    if (!bar) return;
+    var update = function () {
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var p = max > 0 ? doc.scrollTop / max : 0;
+      bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+  })();
+</script>
